@@ -58,7 +58,7 @@ def reassemble_delta(node: PeerNode, ver: str):
         return None
 
     try:
-        data = b"".join(parts[i] for i in range(total))
+        data = b"".join(parts[i] for i in sorted(total))
     except Exception as e:
         print(f"[ERROR] failed to reassemble {ver}: {e}")
         return None
