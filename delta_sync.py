@@ -33,11 +33,11 @@ def broadcast_delta(node, path, sha, size):
     broadcast your message delta
     """
     ver = f"v{int(time.time())}"
-    chunks = 1
+    chunks = (size + 1479) // 1480
     node._announce_model_meta(ver, size, chunks, sha)
-    data = open(path, "rb").read()
-    node._send_model_chunk(ver, 0, chunks, data, (BROADCAST_IP, PORT))
-    print(f"[SEND] delta {ver} ({size} B) broadcasted")
+    node._model_buffers[ver] = {"total": chunks, "parts": {}, "sha256": sha}
+    fragment_and_send(node, ver, path, (BROADCAST_IP, PORT))
+    print(f"[SEND] delta {ver} ({size} B)broadcasted")
     os.remove(path)
     
 
@@ -51,14 +51,14 @@ def reassemble_delta(node: PeerNode, ver: str):
         return None
 
     total = buf["total"]
-    parts = buf["parts"]
+    parts = buf["parts", {}]
     expected_sha = buf.get("sha256")
 
     if len(parts) < total:
         return None
-
     try:
-        data = b"".join(parts[i] for i in sorted(total))
+        ordered = [parts[i] for i in range(total)]
+        data = b"".join(ordered)
     except Exception as e:
         print(f"[ERROR] failed to reassemble {ver}: {e}")
         return None
