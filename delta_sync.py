@@ -51,7 +51,7 @@ def reassemble_delta(node: PeerNode, ver: str):
         return None
 
     total = buf["total"]
-    parts = buf["parts", {}]
+    parts = buf["parts"]
     expected_sha = buf.get("sha256")
 
     if len(parts) < total:
